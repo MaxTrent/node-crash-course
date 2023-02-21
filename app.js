@@ -1,8 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-const { result } = require('lodash');
-const Blog = require('./models/blog');
+// const { result } = require('lodash');
+const blogRoutes = require('./routes/blogRoutes')
 
 //express app
 const app = express();
@@ -34,37 +34,7 @@ app.use(morgan('dev'));
 //     next();
 // });
 
-//mongoose and mongo sandbox routes
-app.get('/add-blog', (req, res)=>{
-const blog = new Blog({
-    title: 'New Blog',
-    snippet: 'About my new blog',
-    body: 'More about my new blog'
-});
 
-blog.save().then((result) => {
-    res.send(result) 
-}).catch((err) => {
-    console.log(err);
-});
-});
-
-
-app.get('/all-blogs', (req, res)=> {
-    Blog.find().then((result)=> {
-        res.send(result);
-    }).catch((err)=>{
-        console.log(err);
-    })
-});
-
-app.get('/single-blog', (req, res)=>{
-    Blog.findById('63f3a24117f79a8317d2493a').then((result)=>{
-        res.send(result);
-    }).catch((err)=>{
-        console.log(err);
-    });
-});
 
 // app.use((req, res, next)=>{
 //     console.log('in the next middleware');
@@ -80,56 +50,8 @@ app.get('/about', (req, res) => {
     res.render('about', { title: 'About' });
 });
 
-//blog routes
-app.get('/blogs', (req, res) => {
-    Blog.find().then((result)=>{
-        res.render('index', {
-            title: 'All Blogs', blogs: result
-        })
-    }).catch((err)=>{
-        console.log(err);
-    })
-});
+app.use('/blogs',blogRoutes);
 
-app.post('/blogs', (req, res) => {
-    const blog = new Blog(req.body);
-
-    blog.save().then((result)=>{
-        res.redirect('/blogs');
-    }).catch((err)=>{
-        console.log(err);
-    })
-});
-
-app.get('/blogs/:id', (req, res)=>{
-    const id = req.params.id;
-    Blog.findById(id).then((result)=>{
-        res.render('details', {blog: result, title: 'Blog Details'})
-    }).catch((err)=>{
-        console.log(err);
-    })
-    console.log('id');
-});
-
-app.delete('/blogs/:id', (req, res)=> {
-    const id = req.params.id;
-
-    Blog.findByIdAndDelete(id).then((result)=>{
-        res.json({redirect: '/blogs'});
-    }).catch(err => {
-        console.log(err);
-    })
-})
-
-app.get('/blogs/create', (req, res) => {
-    res.render('create', { title: 'Create a new blog' });
-})
-
-//redirects
-app.get('/about-us', (req, res) => {
-    // res.send('<p>home page</p>');
-    res.redirect('/about');
-});
 
 //404 page
 app.use((req, res) => {
